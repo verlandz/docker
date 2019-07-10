@@ -1,0 +1,7 @@
+# cmd : sudo docker build --tag api:1.0 .
+
+FROM golang:1.11.11
+
+COPY main.go /app/main.go
+
+CMD ["go","run","/app/main.go"]

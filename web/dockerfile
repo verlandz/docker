@@ -1,0 +1,7 @@
+# cmd : sudo docker build --tag web:1.0 .
+
+FROM golang:1.11.11
+
+COPY main.go /app/web/main.go
+
+CMD ["go","run","/app/web/main.go"]
