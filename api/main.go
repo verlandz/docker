@@ -8,7 +8,7 @@ import (
 	"os"
 	"runtime"
 
-	util "github.com/verlandz/docker/util"
+	util "github.com/verlandz/docker/api/util"
 	redis "gopkg.in/redis.v5"
 )
 
