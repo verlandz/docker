@@ -1,4 +1,4 @@
-// cmd : API_HOST=localhost API_PORT=8082 NAME=John go run main.go
+// cmd : API_HOST=localhost API_PORT=8082 go run main.go
 package main
 
 import (
@@ -7,13 +7,13 @@ import (
 	"os"
 	"runtime"
 
-	util "github.com/verlandz/docker/web/util"
+	util "github.com/verlandz/docker/util"
 )
 
 var port = ":8081"
 
 func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello \"%v\"!", os.Getenv("NAME"))
+	fmt.Fprintf(w, "[Web] Service is running")
 }
 
 func data(w http.ResponseWriter, r *http.Request) {
@@ -28,17 +28,14 @@ func data(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func info() {
-	fmt.Printf("%-8v : %v\n", "NAME", os.Getenv("NAME"))
-	fmt.Printf("%-8v : %v\n", "API_HOST", os.Getenv("API_HOST"))
-	fmt.Printf("%-8v : %v\n", "API_PORT", os.Getenv("API_PORT"))
-	fmt.Println("Running in", runtime.Version())
-	fmt.Println("Listen and serve", port)
-}
-
 func main() {
 	http.HandleFunc("/", home)
 	http.HandleFunc("/data", data)
-	info()
+
+	fmt.Println("API_HOST :", os.Getenv("API_HOST"))
+	fmt.Println("API_PORT :", os.Getenv("API_PORT"))
+
+	fmt.Println("Running in", runtime.Version())
+	fmt.Println("Listen and serve", port)
 	http.ListenAndServe(port, nil)
 }
