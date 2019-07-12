@@ -1,0 +1,38 @@
+version: "3.7"
+
+services:
+  my_redis:
+    container_name: my_redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+    networks:
+      - my_net
+  my_api:
+    container_name: my_api
+    image: api:latest
+    ports:
+      - 8082:8082
+    depends_on:
+      - my_redis
+    environment:
+      - REDIS_HOST=my_redis
+      - REDIS_PORT=6379
+    networks:
+      - my_net
+  my_web:
+    container_name: my_web
+    image: web:latest
+    ports:
+      - 8081:8081
+    depends_on:
+      - my_api
+    environment:
+      - API_HOST=my_api
+      - API_PORT=8082
+    networks:
+      - my_net
+
+networks:
+  my_net:
+    name: my_net
