@@ -1,8 +1,12 @@
-# cmd : sudo docker build --tag web:1.0 .
+# cmd : sudo docker build --tag web:latest .
 
 FROM golang:1.11.11
+EXPOSE 8081
 
-COPY main.go /web/main.go
-COPY util /web/util
+ENV API_HOST=localhost
+ENV API_PORT=8082
 
-CMD ["go","run","/web/main.go"]
+WORKDIR $GOPATH/src/github.com/verlandz/docker/web
+RUN mkdir -p $PWD
+COPY . $PWD 
+CMD ["sh", "-c", "go run $PWD/main.go"]
