@@ -41,7 +41,7 @@ func data(w http.ResponseWriter, r *http.Request) {
 	arr, err := redisClient.HGetAll(redisKey).Result()
 	if err != nil {
 		log.Println(err)
-		fmt.Fprintf(w, "Fail connect to Redis")
+		fmt.Fprintf(w, "Failed to connect to Redis")
 		return
 	}
 

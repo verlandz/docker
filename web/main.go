@@ -24,7 +24,7 @@ func data(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		fmt.Fprintf(w, string(data))
 	} else {
-		fmt.Fprintf(w, "Fail to connect to API")
+		fmt.Fprintf(w, "Failed to connect to API")
 	}
 }
 

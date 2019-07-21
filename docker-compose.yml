@@ -6,6 +6,8 @@ services:
     image: redis:latest
     ports:
       - 6379:6379
+    volumes:
+      - my_redis_data:/data
     networks:
       - my_net
   my_api:
@@ -36,3 +38,7 @@ services:
 networks:
   my_net:
     name: my_net
+
+volumes:
+  my_redis_data:
+    name: my_redis_data
