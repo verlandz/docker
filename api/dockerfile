@@ -1,6 +1,6 @@
 # cmd : sudo docker build --tag api:latest .
 
-FROM golang:1.11.11
+FROM golang:1.11
 EXPOSE 8082
 
 ENV REDIS_HOST=localhost

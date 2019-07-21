@@ -4,6 +4,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"runtime"
@@ -39,7 +40,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 func data(w http.ResponseWriter, r *http.Request) {
 	arr, err := redisClient.HGetAll(redisKey).Result()
 	if err != nil {
-		fmt.Fprintf(w, "Fail to get data from redis")
+		log.Println(err)
+		fmt.Fprintf(w, "Fail connect to Redis")
 		return
 	}
 
@@ -65,5 +67,6 @@ func main() {
 
 	fmt.Println("Running in", runtime.Version())
 	fmt.Println("Listen and serve", port)
-	http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(port, nil)
+	fmt.Println(err)
 }

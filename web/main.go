@@ -24,7 +24,7 @@ func data(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		fmt.Fprintf(w, string(data))
 	} else {
-		fmt.Fprintf(w, "Fail to connect to api")
+		fmt.Fprintf(w, "Fail to connect to API")
 	}
 }
 
@@ -37,5 +37,6 @@ func main() {
 
 	fmt.Println("Running in", runtime.Version())
 	fmt.Println("Listen and serve", port)
-	http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(port, nil)
+	fmt.Println(err)
 }
