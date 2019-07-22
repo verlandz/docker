@@ -25,6 +25,7 @@ You can use another language than `Go`, but this project will focus on using `Go
 - [Install docker](https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04)
 - [Install docker-compose](https://docs.docker.com/compose/install/)
 - [Install golang](https://tecadmin.net/install-go-on-ubuntu/) (except go1.11)
+- [Install golang dep](https://github.com/golang/dep)
 - [Install redis-cli](https://stackoverflow.com/questions/21795340/linux-install-redis-cli-only)
 - [Basic golang](https://golang.org/doc/)
 - [Basic cmd redis](https://redis.io/)
@@ -105,7 +106,7 @@ CONTAINER ID        IMAGE               COMMAND                  CREATED        
 ```
 Then fill the data in `redis-cli`
 ```
-intern@201352:~$ redis-cli -h localhost -p 6379
+root@201352:~# redis-cli -h localhost -p 6379
 localhost:6379> hset user 1 Jonathan
 (integer) 1
 localhost:6379> hset user 2 Mike
@@ -142,9 +143,15 @@ localhost:6379> hgetall user
 **Q:** What `-d` for?<br>
 **A:** Stand for `detach`, to run in background.
 
+***TRIVIA***<br>
+- If you don't mention the image's tag, it will consider as latest.<br>
+e.g.: `docker run ... redis` equals to `docker run ... redis:latest`
+- If the image's tag not `latest`, you must write the tag too.<br>
+e.g.: `docker run ... redis:4.0`
+
 
 ## 4. Upload Web image to docker and run it
-- To upload it you need to create a dockerfile under web folder
+- To upload it you need to create a `dockerfile` under web folder
 - Don't forget to stop web that running in your localhost
 
 cd `$GOPATH/src/github.com/verlandz/docker/web`<br>
@@ -220,8 +227,16 @@ requesting to http://localhost:8082/data
 ```
 The path is correct, no error. Why is it fail to connect to API ? Because the localhost of `my_web` and `my_web` is different, that's why it doesn't connect. To solve this, we have to connect them in a `Network`.
 
+***FAQ***<br>
+**Q:** I didn't pull go1.11 into my images. Where it come from ?<br>
+**A:** It come from your `dockerfile`. If dockerfile can't find the needed images, it will automatically try to pull.
+
+**Q:** In previous, you state to use diff golang version to version comparison. How to to compare?<br>
+**A:** Try to `docker logs my_web`, not like the prev log that state `Running in go1.12.7` but this one state `Running in go1.11.12`
+
+
 ## 5. Upload API image to docker and run it
-- To upload it you need to create a dockerfile under api folder
+- To upload it you need to create a `dockerfile` under api folder
 - Don't forget to stop api that running in your localhost
 
 cd `$GOPATH/src/github.com/verlandz/docker/api`<br>
@@ -332,16 +347,10 @@ Listen and serve :8082
 The IP and port is correct, but why connection refused ? Because there's no such `127.0.0.1:6379` that running in that container. The container of `my_api` and `my_redis` has it own localhost. To solve this, we have to connect them in a `Network`.
 
 ***FAQ***<br>
-**Q:** I didn't pull go1.11 into my images. Where it come from ?<br>
-**A:** It come from your `dockerfile`. If dockerfile can't find the needed images, it will automatically try to pull.
-
-**Q:** In previous, you state to use diff golang version to version comparison. How to to compare?<br>
-**A:** Try to `docker logs my_web`, not like the prev log that state `Running in go1.12.7` but this one state `Running in go1.11.12`
-
 **Q:** Why we get a lot of log when uploading api image to docker ?<br>
-**A:** Because it try do `install dep` and `run dep`. It's written in dockerfile.
+**A:** Because it tries to `install dep` and `run dep` in docker. It's written in dockerfile.
 
-#### TRIVIA
+***TRIVIA***<br>
 - [ARG vs ENV](https://vsupalov.com/docker-arg-vs-env/)
 - [RUN vs CMD vs ENTRYPOINT](https://stackoverflow.com/questions/37461868/difference-between-run-and-cmd-in-a-docker-file)
 - [VAR inside CMD](https://stackoverflow.com/questions/40454470/how-can-i-use-a-variable-inside-a-dockerfile-cmd)
@@ -392,7 +401,7 @@ root@201352:~# docker network connect my_net my_web
 
 ***FAQ***<br>
 **Q:** How to check if container already connect to desired network ?<br>
-**A:** Try to inspect the container `docker inspect container_name` then see the value of `Networks` field.
+**A:** Try to inspect the container `docker inspect container_name` then see the value in `Networks` field.
 
 
 ## 7. Storage
@@ -401,11 +410,12 @@ The container in docker is `stateless` means doesn't store the data. If you stop
 Docker is capable to store data that state in container into storage. This section will focus on 2 types storage:
 - `Bind Mount` save data into your file system.
 - `Volume` save data into your docker area
-<br>You can read more [here](https://docs.docker.com/storage/)
+
+You can read more [here](https://docs.docker.com/storage/)
 
 Before we start, we must know `how to mounting` it, because every image has it own way. In redis, you can read [here](https://hub.docker.com/_/redis) and see this section
 <br>![redis-way](https://i.ibb.co/KVpnb3w/redis-way.png)<br>
-It give the example for Bind Mount `-v /docker/host/dir:/data` and for volume `-v VOLUME:/data`
+It give the example for Bind Mount `-v /docker/host/dir:/data` and for Volume `-v VOLUME:/data`
 
 
 > Bind Mount
@@ -441,6 +451,10 @@ This will store data in volume with name `my_redis_data`
 root@201352:~# docker stop my_redis
 root@201352:~# docker rm my_redis
 root@201352:~# docker volume create my_redis_data 
+root@201352:~# docker volume ls
+DRIVER              VOLUME NAME
+local               my_redis_data
+
 root@201352:~# docker run -d --name my_redis -p 6379:6379 -v my_redis_data:/data redis
 root@201352:~# docker network connect my_net my_redis
 
@@ -500,6 +514,14 @@ localhost:6379> hgetall user
 2) "This is from docker-compose"
 ```
 ![dc](https://i.ibb.co/L6bDmHk/docker-compose.png)
+<br>Try `sudo docker-compose ps` to see what containers that currently monitored by `docker-compose`.
+```
+  Name                Command               State           Ports         
+--------------------------------------------------------------------------
+my_api     sh -c go run $PWD/main.go        Up      0.0.0.0:8082->8082/tcp
+my_redis   docker-entrypoint.sh redis ...   Up      0.0.0.0:6379->6379/tcp
+my_web     sh -c go run $PWD/main.go        Up      0.0.0.0:8081->8081/tcp
+```
 <br>Let's test the volume
 ```
 root@201352:~# docker stop my_redis
@@ -508,13 +530,73 @@ root@201352:~# docker run -d --name my_redis -p 6379:6379 -v my_redis_data:/data
 root@201352:~# docker network connect my_net my_redis
 ```
 ![dc](https://i.ibb.co/L6bDmHk/docker-compose.png)
-<br>Keep in mind, the above redis's container is no longer monitor by `docker-compose`, because that's a new container. You can `sudo docker-compose ps` to see what containers that currently monitor by `docker-compose`.
+<br>Let's clean them up, by `sudo docker-compose down`.
 ```
- Name             Command            State           Ports         
--------------------------------------------------------------------
-my_api   sh -c go run $PWD/main.go   Up      0.0.0.0:8082->8082/tcp
-my_web   sh -c go run $PWD/main.go   Up      0.0.0.0:8081->8081/tcp
+Stopping my_web ... done
+Stopping my_api ... done
+Removing my_web ... done
+Removing my_api ... done
+Removing network my_net
+ERROR: error while removing network: network my_net id 05e90eb7d903e29db7934ed201594171c6652f55b1c9e577e8d34ecf3a5f6e76 has active endpoints
 ```
-You can `sudo docker-compose stop` to stop all containers and start it again by `sudo docker-compose start` or remove it all by `sudo docker-compose down`.
+The `ERROR` is happened because the network that monitored by `docker-compose` is being use by `my_redis` container that no longer part of `docker-compose`. To solve this, you must disconnect all container that connected to `my_net`
+```
+root@201352:~# docker network disconnect my_net my_redis
+```
+Then, try to `sudo docker-compose down` again.
 
-You can see more `docker-compose` commands in `sudo docker-compose help`.
+You also can stop all by `sudo docker-compose stop` and start all by `sudo docker-compose start`, see more in `sudo docker-compose help`.
+
+
+## 9. Upload the Image to Registry in docker hub
+For simply, imagine `docker hub` like `github`.
+
+- Visit `https://hub.docker.com/`
+- Let's `Sign In` or `Create an Account`
+- Choose `Create a Repository`
+- To push the image, you can follow the guide in tab `General`
+
+![hd1](https://i.ibb.co/JBcQN5J/dockerhub2.png)
+- Let's push it
+```
+root@201352:~# docker push verlandz/web:latest
+The push refers to repository [docker.io/verlandz/web]
+An image does not exist locally with the tag: verlandz/web
+
+root@201352:~# docker images 
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+api                 latest              4017847f5919        About an hour ago   848MB
+web                 latest              2cce56ff5948        About an hour ago   796MB
+golang              1.11                ee3ec9ac0398        2 days ago          796MB
+redis               latest              598a6f110d01        10 days ago         118MB
+```
+- As you can see, we only have image with name `web`, but to push it, the image name must be `your_repo_name/image_name`. It can be solved by using `tag` like this guide :
+
+![hd2](https://i.ibb.co/6JDDKqg/hubdocker.png)
+```
+root@201352:~# docker tag web:latest verlandz/web:latest
+
+root@201352:~# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+api                 latest              4017847f5919        About an hour ago   848MB
+web                 latest              2cce56ff5948        About an hour ago   796MB
+verlandz/web        latest              2cce56ff5948        About an hour ago   796MB
+golang              1.11                ee3ec9ac0398        2 days ago          796MB
+redis               latest              598a6f110d01        10 days ago         118MB
+
+root@201352:~# docker push verlandz/web:latest
+The push refers to repository [docker.io/verlandz/web]
+a4758c71a2b1: Pushed 
+da8888cca63a: Pushed 
+6354a42e4c7e: Mounted from library/golang 
+30ac98b0150a: Mounted from library/golang 
+2eac6d41b7d2: Mounted from library/golang 
+05c027e771c8: Mounted from library/golang 
+e9313b51f46d: Mounted from library/golang 
+46601dcd4114: Mounted from library/golang 
+31b0e148310d: Mounted from library/golang 
+latest: digest: sha256:f55ff4e7b16a173da1a020fec3ef883990ebee63ca56e4100a754c00db5b7ea8 size: 2210
+```
+- If you got `denied: requested access to the resource is denied`, try to `docker login`. The username and password are same in `https://hub.docker.com/`. If you want to switch the account or logout, try `docker logout`.
+
+You can visit mine [here](https://cloud.docker.com/repository/docker/verlandz/web/general) and [here](https://cloud.docker.com/repository/docker/verlandz/api/general).
