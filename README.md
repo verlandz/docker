@@ -373,10 +373,10 @@ root@201352:~# docker rm my_api my_web
 my_api
 my_web
 
-root@201352:~# docker run -t -d -e API_HOST=my_api -e API_PORT=8082 --name my_web -p 8081:8081 web
+root@201352:~# docker run -d -e API_HOST=my_api -e API_PORT=8082 --name my_web -p 8081:8081 web
 5547bda29ebcc1d3c65989ff4b67642feb4123f832726cc297482060d3d2633f
 
-root@201352:~# docker run -t -d -e REDIS_HOST=my_redis -e REDIS_PORT=6379 --name my_api -p 8082:8082 api
+root@201352:~# docker run -d -e REDIS_HOST=my_redis -e REDIS_PORT=6379 --name my_api -p 8082:8082 api
 b09aeaba36f9cb3b10d920045522d4c5fdbe650ec33b4b912acac171048fa17b
 ```
 Let's create a network and connect them.
@@ -402,6 +402,9 @@ root@201352:~# docker network connect my_net my_web
 ***FAQ***<br>
 **Q:** How to check if container already connect to desired network ?<br>
 **A:** Try to inspect the container `docker inspect container_name` then see the value in `Networks` field.
+
+**Q:** How to disconnect ?<br>
+**A:** e.g to my_redis `docker network disconnect my_net my_redis`.
 
 
 ## 7. Storage
@@ -530,7 +533,7 @@ root@201352:~# docker run -d --name my_redis -p 6379:6379 -v my_redis_data:/data
 root@201352:~# docker network connect my_net my_redis
 ```
 ![dc](https://i.ibb.co/L6bDmHk/docker-compose.png)
-<br>Let's clean them up, by `sudo docker-compose down`.
+<br>Let's clean them up, by `sudo docker-compose down`
 ```
 Stopping my_web ... done
 Stopping my_api ... done
@@ -545,7 +548,7 @@ root@201352:~# docker network disconnect my_net my_redis
 ```
 Then, try to `sudo docker-compose down` again.
 
-You also can stop all by `sudo docker-compose stop` and start all by `sudo docker-compose start`, see more in `sudo docker-compose help`.
+You also can stop all by `sudo docker-compose stop` and start all by `sudo docker-compose start`, see more in `sudo docker-compose help`
 
 
 ## 9. Upload the Image to Registry in docker hub
@@ -600,3 +603,41 @@ latest: digest: sha256:f55ff4e7b16a173da1a020fec3ef883990ebee63ca56e4100a754c00d
 - If you got `denied: requested access to the resource is denied`, try to `docker login`. The username and password are same in `https://hub.docker.com/`. If you want to switch the account or logout, try `docker logout`.
 
 You can visit mine [here](https://cloud.docker.com/repository/docker/verlandz/web/general) and [here](https://cloud.docker.com/repository/docker/verlandz/api/general).
+
+
+## 10. Pull the uploaded images and reuse it by docker-compose
+Let's pull:
+```
+docker pull verlandz/web
+docker pull verlandz/api
+```
+Check the images:
+```
+root@BA-00002893:/# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+redis               latest              de25a81a5a0b        2 days ago          98.2MB
+postgres            latest              f9b3d2f9a593        2 weeks ago         348MB
+golang              1.11                43a154fee764        2 months ago        796MB
+verlandz/api        latest              4017847f5919        2 months ago        848MB
+verlandz/web        latest              2cce56ff5948        2 months ago        796MB
+```
+
+`verlandz/api` and `verlandz/web` are the images that you just downloaded. In `docker-compose.yml`, it's written `image: api:latest` and `image: web:latest`. In here you got 2 options: copy the images using tag or change images name in `docker-compose.yml`. I prefer to copy the images using tag, because it's much easier.
+```
+root@BA-00002893:/# docker tag verlandz/web:latest web:latest  
+root@BA-00002893:/# docker tag verlandz/api:latest api:latest  
+```
+Check the images:
+```
+root@BA-00002893:/# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+redis               latest              de25a81a5a0b        2 days ago          98.2MB
+postgres            latest              f9b3d2f9a593        2 weeks ago         348MB
+golang              1.11                43a154fee764        2 months ago        796MB
+api                 latest              4017847f5919        2 months ago        848MB
+verlandz/api        latest              4017847f5919        2 months ago        848MB
+web                 latest              2cce56ff5948        2 months ago        796MB
+verlandz/web        latest              2cce56ff5948        2 months ago        796MB
+```
+
+OK all good, try to `sudo docker-compose up -d` and visit the site.
