@@ -104,7 +104,7 @@ root@201352:~# docker ps -a
 CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS                    NAMES
 6a191a7285ef        redis               "docker-entrypoint.s…"   5 seconds ago        Up 2 seconds        0.0.0.0:6379->6379/tcp   my_redis
 ```
-Then fill the data in `redis-cli`
+Then fill the data in `redis-cli` (your own installed `redis-cli`)
 ```
 root@201352:~# redis-cli -h localhost -p 6379
 localhost:6379> hset user 1 Jonathan
@@ -120,6 +120,26 @@ localhost:6379> hgetall user
 4) "Mike"
 5) "3"
 6) "Ricky"
+```
+If you can't install `redis-cli` to your device, you can just do the command in the running container with [exec](https://docs.docker.com/engine/reference/commandline/exec/).
+```
+root@201352:~# docker exec -it my_redis /bin/bash
+root@f5cf5b24a767:/data# redis-cli -h localhost -p 6379
+localhost:6379> hset user 1 Jonathan
+(integer) 1
+localhost:6379> hset user 2 Mike
+(integer) 1
+localhost:6379> hset user 3 Ricky
+(integer) 1
+localhost:6379> hgetall user
+1) "1"
+2) "Jonathan"
+3) "2"
+4) "Mike"
+5) "3"
+6) "Ricky"
+localhost:6379> exit
+root@f5cf5b24a767:/data# exit
 ```
 ![8081-data-show](https://i.ibb.co/hcwMB4d/8081-data-show.png)
 ![8082-data-show](https://i.ibb.co/4VsTqcs/8082-data-show.png)
