@@ -1,0 +1,14 @@
+# cmd: sudo docker build --tag verlandz/docker-app:1.0 .
+
+FROM golang:1.11
+EXPOSE 8080
+
+ENV REDIS_HOST=127.0.0.1
+ENV REDIS_PORT=6379
+ENV GO111MODULE=on
+
+WORKDIR $GOPATH/src/github.com/verlandz/docker/app
+RUN mkdir -p $PWD
+COPY . $PWD
+
+CMD ["sh","-c","go run $PWD/main.go"]
