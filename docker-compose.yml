@@ -1,4 +1,5 @@
 # Compose version: https://docs.docker.com/compose/compose-file/#compose-and-docker-compatibility-matrix
+# cmd: sudo docker-compose up -d
 version: "3.7"
 
 services:
