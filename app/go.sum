@@ -1,0 +1,4 @@
+github.com/verlandz/docker v1.0.0 h1:s8dfJpXf4lOnxSQA5Sav7kUcz+GoftMHe1wWHU94X7c=
+github.com/verlandz/docker v1.0.0/go.mod h1:zDg7vADuBI/cLbF49m/I6eTADuj3HOcrc3zZRrESLyQ=
+gopkg.in/redis.v5 v5.2.9 h1:MNZYOLPomQzZMfpN3ZtD1uyJ2IDonTTlxYiV/pEApiw=
+gopkg.in/redis.v5 v5.2.9/go.mod h1:6gtv0/+A4iM08kdRfocWYB3bLX2tebpNtfKlFT6H4mY=

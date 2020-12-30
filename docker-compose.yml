@@ -1,37 +1,27 @@
+# Compose version: https://docs.docker.com/compose/compose-file/#compose-and-docker-compatibility-matrix
+# cmd: sudo docker-compose up -d
 version: "3.7"
 
 services:
   my_redis:
     container_name: my_redis
-    image: redis:latest
+    image: redis:6.0.9
     ports:
       - 6379:6379
     volumes:
       - my_redis_data:/data
     networks:
       - my_net
-  my_api:
-    container_name: my_api
-    image: api:latest
+  my_app:
+    container_name: my_app
+    image: verlandz/docker-app:1.0
     ports:
-      - 8082:8082
+      - 8080:8080
     depends_on:
       - my_redis
     environment:
       - REDIS_HOST=my_redis
       - REDIS_PORT=6379
-    networks:
-      - my_net
-  my_web:
-    container_name: my_web
-    image: web:latest
-    ports:
-      - 8081:8081
-    depends_on:
-      - my_api
-    environment:
-      - API_HOST=my_api
-      - API_PORT=8082
     networks:
       - my_net
 
